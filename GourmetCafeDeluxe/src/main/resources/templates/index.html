@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gourmet Coffee Deluxe</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<header class="headerApp">
+    <h1>Gourmet Coffee </h1>
+    <button class="add-product-btn" onclick="openModal()">Add Product</button>
+</header>
+
+
+<nav class="mobile-menu">
+    <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Menu</a></li>
+        <li><a href="#">About Us</a></li>
+    </ul>
+</nav>
+
+<div class="container" id="container">
+    <div class="imageCard">
+        <img src="https://loucodocafe.com.br/wp-content/uploads/2019/09/cafe-expresso-02-e1568084083582.jpg">
+        <h2>Coffee Espresso</h2>
+        <p>Type: Espresso</p>
+        <p>Informations: Your coffee description goes here.</p>
+        <h3>Price: $12.0</h3>
+    </div>
+</div>
+
+
+<div id="addProductModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Add Product</h2>
+        <form id="productForm">
+            <label for="productName">Product Name:</label>
+            <input type="text" id="productName" name="productName" required>
+
+            <label for="productType">Type:</label>
+            <input type="text" id="productType" name="productType" required>
+
+            <label for="productInfo">Information:</label>
+            <textarea id="productInfo" name="productInfo" required></textarea>
+
+            <label for="productImage">Image URL:</label>
+            <input type="text" id="productImage" name="productImage" required>
+
+            <label for="productPrice">Price:</label>
+            <input type="number" id="productPrice" name="productPrice" required step="0.01">
+
+
+            <button type="button" onclick="saveProduct()">Save Product</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal() {
+        var modal = document.getElementById('addProductModal');
+        modal.style.display = 'block';
+    }
+
+    function closeModal() {
+        var modal = document.getElementById('addProductModal');
+        modal.style.display = 'none';
+    }
+
+ function saveProduct() {
+    var productName = document.getElementById('productName').value;
+    var productType = document.getElementById('productType').value;
+    var productInfo = document.getElementById('productInfo').value;
+    var productImage = document.getElementById('productImage').value;
+    var productPrice = parseFloat(document.getElementById('productPrice').value);
+
+
+    if (isNaN(productPrice) || productPrice <= 0) {
+        alert('Please enter a valid positive price.');
+        return;
+    }
+
+    var product = {
+        name: productName,
+        type: productType,
+        informations: productInfo,
+        image: productImage,
+        price: productPrice
+    };
+
+ 
+    var productJSON = JSON.stringify(product);
+
+  
+    fetch('http://localhost:8080/coffee', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: productJSON,
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Product saved:', data);
+
+        alert('Product saved!');
+        closeModal();
+    })
+    .catch(error => {
+        console.error('Error saving product:', error);
+        alert('Error saving product. Please try again.');
+    });
+}
+function listProducts() {
+        fetch('http://localhost:8080/coffee')
+        .then(response => response.json())
+        .then(products => {
+          
+            var container = document.getElementById('container');
+            container.innerHTML = '';
+
+            products.forEach(product => {
+                var productCard = document.createElement('div');
+                productCard.className = 'imageCard';
+                productCard.innerHTML = `
+                    <img src="${product.image}">
+                    <h2>${product.name}</h2>
+                    <p>Type: ${product.type}</p>
+                    <p>Information: ${product.informations}</p>
+                    <h3>Price: $${product.price}</h3>
+                `;
+                container.appendChild(productCard);
+            });
+
+              
+        })
+    
+        .catch(error => {
+            console.error('Error fetching products:', error);
+            alert('Error fetching products. Please try again.');
+        });
+
+
+    }
+
+    listProducts();
+</script>
+</body>
+</html>
